@@ -15,24 +15,11 @@ The root endpoint exposes deployment metadata, including the deployed commit, co
 
 ### Deployment architecture
 
-```mermaid
-flowchart LR
-    Repo[GitHub repository - Push] --> Actions[GitHub Actions]
-    Actions --> GHCR[Public GHCR image]
-    GHCR --> CloudRun[Google Cloud Run]
-    CloudRun --> API[Public HTTPS API]
-```
+![Deployment architecture](docs/architecture.png)
 
 ### CI/CD stages
 
-```mermaid
-flowchart LR
-    Test[Test<br/>Run automated tests]
-    Build[Build & Publish<br/>Build Docker image<br/>Push latest + SHA tags]
-    Deploy[Deploy<br/>Deploy SHA-tagged image<br/>to Cloud Run]
-
-    Test --> Build --> Deploy
-```
+![Three-stage CI/CD pipeline](docs/pipeline.png)
 
 The workflow runs on pushes to `main` and can also be started manually. Each stage must succeed before the next one begins.
 
