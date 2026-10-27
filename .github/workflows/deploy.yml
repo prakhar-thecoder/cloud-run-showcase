@@ -35,10 +35,15 @@ jobs:
       - name: Run tests
         run: python -m pytest -q
 
-  publish-and-deploy:
-    name: Publish image and deploy to Cloud Run
+  build-and-publish:
+    name: Build and publish image
     needs: test
     runs-on: ubuntu-latest
+    outputs:
+      short_sha: ${{ steps.metadata.outputs.short_sha }}
+      commit_url: ${{ steps.metadata.outputs.commit_url }}
+      build_time: ${{ steps.metadata.outputs.build_time }}
+      commit_message: ${{ steps.metadata.outputs.commit_message }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -73,6 +78,11 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+  deploy:
+    name: Deploy to Cloud Run
+    needs: build-and-publish
+    runs-on: ubuntu-latest
+    steps:
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
@@ -87,12 +97,12 @@ jobs:
         with:
           service: ${{ env.SERVICE_NAME }}
           region: ${{ env.REGION }}
-          image: ${{ env.IMAGE }}:sha-${{ steps.metadata.outputs.short_sha }}
+          image: ${{ env.IMAGE }}:sha-${{ needs.build-and-publish.outputs.short_sha }}
           env_vars: |-
-            COMMIT_SHA=${{ steps.metadata.outputs.short_sha }}
-            COMMIT_URL=${{ steps.metadata.outputs.commit_url }}
-            BUILD_TIME=${{ steps.metadata.outputs.build_time }}
-            COMMIT_MESSAGE=${{ steps.metadata.outputs.commit_message }}
+            COMMIT_SHA=${{ needs.build-and-publish.outputs.short_sha }}
+            COMMIT_URL=${{ needs.build-and-publish.outputs.commit_url }}
+            BUILD_TIME=${{ needs.build-and-publish.outputs.build_time }}
+            COMMIT_MESSAGE=${{ needs.build-and-publish.outputs.commit_message }}
           flags: >-
             --allow-unauthenticated
             --port=8080
