@@ -33,7 +33,7 @@ jobs:
         run: pip install -r requirements-dev.txt
 
       - name: Run tests
-        run: pytest -q
+        run: python -m pytest -q
 
   publish-and-deploy:
     name: Publish image and deploy to Cloud Run
