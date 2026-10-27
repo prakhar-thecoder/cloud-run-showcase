@@ -40,3 +40,14 @@ The API is then available at <http://localhost:8080>.
 ## Planned deployment
 
 The service will be containerized and deployed to Google Cloud Run in `us-central1`, using request-based billing, no minimum instances, and GitHub Actions for build and deployment automation.
+
+## CI/CD
+
+The workflow in `.github/workflows/deploy.yml` runs on pushes to `main` and can also be started manually. It tests the application, publishes `latest` and `sha-<short-sha>` images to GHCR, and deploys the SHA-tagged image to Cloud Run.
+
+The repository must define these variables before the workflow can deploy:
+
+- `GCP_WIF_PROVIDER` — full Workload Identity Federation provider resource name
+- `GCP_SERVICE_ACCOUNT` — deployer service account email
+
+The Google service account needs permission to deploy Cloud Run services. GitHub Actions authenticates with short-lived credentials through Workload Identity Federation; no long-lived JSON key is stored in GitHub.
