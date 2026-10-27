@@ -1,15 +1,61 @@
 # Cloud Run Showcase
 
-A lightweight FastAPI project demonstrating a production-style service deployed to Google Cloud Run.
+[![CI/CD](https://github.com/prakhar-thecoder/cloud-run-showcase/actions/workflows/deploy.yml/badge.svg)](https://github.com/prakhar-thecoder/cloud-run-showcase/actions/workflows/deploy.yml)
 
-## API
+A production-grade serverless deployment showcase: a containerized HTTP API tested, published, and deployed to Google Cloud Run through GitHub Actions.
 
-- `GET /` — project message and deployment information
-- `GET /health` — health check
-- `GET /docs` — interactive OpenAPI documentation
-- `GET /redoc` — ReDoc documentation
+## Live deployment
 
-The root response includes the commit SHA, commit message, GitHub commit URL, repository URL, GitHub profile URL, API version, and build timestamp. Deployment metadata is supplied through environment variables so the same image works locally and in Cloud Run.
+- **Service:** [https://cloud-run-showcase-240730567588.us-central1.run.app/](https://cloud-run-showcase-240730567588.us-central1.run.app/)
+- **Interactive API docs:** [https://cloud-run-showcase-240730567588.us-central1.run.app/docs](https://cloud-run-showcase-240730567588.us-central1.run.app/docs)
+
+The root endpoint exposes deployment metadata, including the deployed commit, commit message, source commit URL, and build timestamp.
+
+## Delivery pipeline
+
+### Deployment architecture
+
+```mermaid
+flowchart LR
+    Repo[GitHub repository - Push] --> Actions[GitHub Actions]
+    Actions --> GHCR[Public GHCR image]
+    GHCR --> CloudRun[Google Cloud Run]
+    CloudRun --> API[Public HTTPS API]
+```
+
+### CI/CD stages
+
+```mermaid
+flowchart LR
+    Test[Test<br/>Run automated tests]
+    Build[Build & Publish<br/>Build Docker image<br/>Push latest + SHA tags]
+    Deploy[Deploy<br/>Deploy SHA-tagged image<br/>to Cloud Run]
+
+    Test --> Build --> Deploy
+```
+
+The workflow runs on pushes to `main` and can also be started manually. Each stage must succeed before the next one begins.
+
+## Image and release strategy
+
+The public container image is published at:
+
+```text
+ghcr.io/prakhar-thecoder/cloud-run-showcase
+```
+
+Every build publishes two tags:
+
+- `latest` — points to the newest successful build
+- `sha-<short-sha>` — immutable identifier for a specific source revision
+
+Cloud Run deploys the SHA-tagged image rather than `latest`, making every running revision reproducible and traceable to GitHub.
+
+## Production-grade features
+
+- Keyless GitHub-to-Google authentication using Workload Identity Federation
+- 3-staged pipeline - separate test, build/publish, and deploy stages
+- Immutable image-based deployments
 
 ## Run locally
 
@@ -17,37 +63,21 @@ The root response includes the commit SHA, commit message, GitHub commit URL, re
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements-dev.txt
+python -m pytest -q
 uvicorn app.main:app --reload
 ```
 
-Then visit <http://127.0.0.1:8000/docs>.
-
-## Test
-
-```bash
-pytest
-```
-
-## Run with Docker
+Or run the production container locally:
 
 ```bash
 docker build -t cloud-run-showcase:local .
 docker run --rm -p 8080:8080 cloud-run-showcase:local
 ```
 
-The API is then available at <http://localhost:8080>.
+The local service is available at <http://localhost:8080>.
 
-## Planned deployment
+## Future improvements
 
-The service will be containerized and deployed to Google Cloud Run in `us-central1`, using request-based billing, no minimum instances, and GitHub Actions for build and deployment automation.
-
-## CI/CD
-
-The workflow in `.github/workflows/deploy.yml` runs on pushes to `main` and can also be started manually. It tests the application, publishes `latest` and `sha-<short-sha>` images to GHCR, and deploys the SHA-tagged image to Cloud Run.
-
-The repository must define these variables before the workflow can deploy:
-
-- `GCP_WIF_PROVIDER` — full Workload Identity Federation provider resource name
-- `GCP_SERVICE_ACCOUNT` — deployer service account email
-
-The Google service account needs permission to deploy Cloud Run services. GitHub Actions authenticates with short-lived credentials through Workload Identity Federation; no long-lived JSON key is stored in GitHub.
+- Include a Web Page showing revision history to visitors
+- Staging and production environments
+- Cloud Run revision traffic splitting and deployment approvals
