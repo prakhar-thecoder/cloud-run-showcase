@@ -9,7 +9,7 @@ A lightweight FastAPI project demonstrating a production-style service deployed 
 - `GET /docs` — interactive OpenAPI documentation
 - `GET /redoc` — ReDoc documentation
 
-The root response includes the commit SHA, GitHub commit URL, repository URL, GitHub profile URL, API version, and build timestamp. Deployment metadata is supplied through environment variables so the same image works locally and in Cloud Run.
+The root response includes the commit SHA, commit message, GitHub commit URL, repository URL, GitHub profile URL, API version, and build timestamp. Deployment metadata is supplied through environment variables so the same image works locally and in Cloud Run.
 
 ## Run locally
 

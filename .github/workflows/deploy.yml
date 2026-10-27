@@ -49,6 +49,8 @@ jobs:
           echo "short_sha=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
           echo "commit_url=https://github.com/${GITHUB_REPOSITORY}/commit/${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
           echo "build_time=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> "$GITHUB_OUTPUT"
+          commit_message="$(git log -1 --pretty=%s | tr ',|' ';')"
+          echo "commit_message=$commit_message" >> "$GITHUB_OUTPUT"
 
       - name: Log in to GHCR
         uses: docker/login-action@v3
@@ -93,4 +95,4 @@ jobs:
             --cpu=1
             --min=0
             --max=1
-            --set-env-vars=COMMIT_SHA=${{ steps.metadata.outputs.short_sha }},COMMIT_URL=${{ steps.metadata.outputs.commit_url }},BUILD_TIME=${{ steps.metadata.outputs.build_time }}
+            --set-env-vars=COMMIT_SHA=${{ steps.metadata.outputs.short_sha }},COMMIT_URL=${{ steps.metadata.outputs.commit_url }},BUILD_TIME=${{ steps.metadata.outputs.build_time }},COMMIT_MESSAGE=${{ steps.metadata.outputs.commit_message }}

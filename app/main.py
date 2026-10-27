@@ -33,6 +33,7 @@ def project_info() -> dict[str, str]:
         ),
         "commit_sha": os.getenv("COMMIT_SHA", "local"),
         "commit_url": os.getenv("COMMIT_URL", ""),
+        "commit_message": os.getenv("COMMIT_MESSAGE", "local development"),
         "built_at": os.getenv("BUILD_TIME", datetime.now(timezone.utc).isoformat()),
     }
 
