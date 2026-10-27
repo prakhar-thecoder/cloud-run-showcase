@@ -88,6 +88,11 @@ jobs:
           service: ${{ env.SERVICE_NAME }}
           region: ${{ env.REGION }}
           image: ${{ env.IMAGE }}:sha-${{ steps.metadata.outputs.short_sha }}
+          env_vars: |-
+            COMMIT_SHA=${{ steps.metadata.outputs.short_sha }}
+            COMMIT_URL=${{ steps.metadata.outputs.commit_url }}
+            BUILD_TIME=${{ steps.metadata.outputs.build_time }}
+            COMMIT_MESSAGE=${{ steps.metadata.outputs.commit_message }}
           flags: >-
             --allow-unauthenticated
             --port=8080
@@ -95,4 +100,3 @@ jobs:
             --cpu=1
             --min=0
             --max=1
-            --set-env-vars=COMMIT_SHA=${{ steps.metadata.outputs.short_sha }},COMMIT_URL=${{ steps.metadata.outputs.commit_url }},BUILD_TIME=${{ steps.metadata.outputs.build_time }},COMMIT_MESSAGE=${{ steps.metadata.outputs.commit_message }}
